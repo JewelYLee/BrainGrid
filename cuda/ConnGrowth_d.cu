@@ -87,22 +87,22 @@ __global__ void updateSynapsesWeightsDevice( int num_neurons, BGFLOAT deltaT, BG
 
     // Scale and add sign to the areas
     // visit each neuron 'a'
-    int src_neuron = idx;
+    int dest_neuron = idx;
 
     // and each destination neuron 'b'
-    for (int dest_neuron = 0; dest_neuron < num_neurons; dest_neuron++) {
+    for (int src_neuron = 0; src_neuron < num_neurons; src_neuron++) {
         // visit each synapse at (xa,ya)
         bool connected = false;
         synapseType type = synType(neuron_type_map_d, src_neuron, dest_neuron);
 
         // for each existing synapse
-        size_t existing_synapses = allSynapsesDevice->synapse_counts[src_neuron];
+        size_t existing_synapses = allSynapsesDevice->synapse_counts[dest_neuron];
         int existing_synapses_checked = 0;
         for (size_t synapse_index = 0; (existing_synapses_checked < existing_synapses) && !connected; synapse_index++) {
-            uint32_t iSyn = maxSynapses * src_neuron + synapse_index;
+            uint32_t iSyn = maxSynapses * dest_neuron + synapse_index;
             if (allSynapsesDevice->in_use[iSyn] == true) {
                 // if there is a synapse between a and b
-                if (allSynapsesDevice->destNeuronIndex[iSyn] == dest_neuron) {
+                if (allSynapsesDevice->sourceNeuronIndex[iSyn] == src_neuron) {
                     connected = true;
                     adjusted++;
 
@@ -111,7 +111,7 @@ __global__ void updateSynapsesWeightsDevice( int num_neurons, BGFLOAT deltaT, BG
                     // zero.
                     if (W_d[src_neuron * num_neurons + dest_neuron] < 0) {
                         removed++;
-                        eraseSpikingSynapse(allSynapsesDevice, src_neuron, synapse_index, maxSynapses);
+                        eraseSpikingSynapse(allSynapsesDevice, dest_neuron, synapse_index, maxSynapses);
                     } else {
                         // adjust
                         // g_synapseStrengthAdjustmentConstant is 1.0e-8;
