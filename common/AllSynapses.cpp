@@ -242,15 +242,15 @@ void AllSynapses::createSynapseImap(SynapseIndexMap *&synapseIndexMap, const Sim
         // allocate memories for forward map
         vector<uint32_t>* rgSynapseSynapseIndexMap = new vector<uint32_t>[neuron_count];
 
-        uint32_t syn_i = 0;
-        int n_inUse = 0;
-
         if (synapseIndexMap != NULL)
         {
             delete synapseIndexMap;
             synapseIndexMap = NULL;
         }
 
+        uint32_t syn_i = 0;
+        int n_inUse = 0;
+        
         // create synapse forward map
         synapseIndexMap = new SynapseIndexMap(neuron_count, total_synapse_counts);
         for (int i = 0; i < neuron_count; i++)
@@ -267,6 +267,7 @@ void AllSynapses::createSynapseImap(SynapseIndexMap *&synapseIndexMap, const Sim
                 }
         }
 
+        DEBUG ( cout << "n_inUse: " << n_inUse << endl; )
         assert( total_synapse_counts == n_inUse );
         this->total_synapse_counts = total_synapse_counts;
 
@@ -335,7 +336,7 @@ void AllSynapses::advanceSynapses(const SimulationInfo *sim_info, IAllNeurons *n
  *  Remove a synapse from the network.
  *
  *  @param  neuron_index   Index of a neuron to remove from.
- *  @param  iSyn           Index of a synapse to remove.
+ *  @param  iSyn           Global Index of a synapse to remove.
  */
 void AllSynapses::eraseSynapse(const int neuron_index, const uint32_t iSyn)
 {
@@ -358,6 +359,7 @@ void AllSynapses::eraseSynapse(const int neuron_index, const uint32_t iSyn)
 void AllSynapses::addSynapse(uint32_t &iSyn, synapseType type, const int src_neuron, const int dest_neuron, BGFLOAT *sum_point, const BGFLOAT deltaT)
 {
     if (synapse_counts[dest_neuron] >= maxSynapsesPerNeuron) {
+       DEBUG ( cout << "Neuron : " << dest_neuron << " ran out of space for new synapses." << endl; )
         return; // TODO: ERROR!
     }
 
